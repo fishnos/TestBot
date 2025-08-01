@@ -21,7 +21,7 @@ public class RunPivotRaw extends Command {
     @Override
     public void execute() {
         double pivotInput = controller.getLeftY();
-        pivotSubsystem.setAngle(pivotSubsystem.getAngle().plus(Rotation2d.fromDegrees(pivotInput * 10)));
+        pivotSubsystem.setAngle(Rotation2d.fromRadians(pivotInput * Math.PI));
 
         Logger.recordOutput("Pivot/angleDeg", pivotSubsystem.getAngle().getDegrees());
     }

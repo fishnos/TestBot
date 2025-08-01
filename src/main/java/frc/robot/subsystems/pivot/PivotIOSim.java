@@ -10,9 +10,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.robot.Constants;
 
@@ -47,7 +45,7 @@ public class PivotIOSim implements PivotIO {
             pivotConstants.kSTARTING_ANGLE_RAD
         );
 
-        this.pivotFeedback = new PIDController(100, 0, 50);
+        this.pivotFeedback = new PIDController(50, 0, 10);
         pivotFeedback.enableContinuousInput(-Math.PI, Math.PI);
 
         this.pivotFeedforward = new ArmFeedforward(0, 0, 0, 0);
@@ -71,7 +69,7 @@ public class PivotIOSim implements PivotIO {
         inputs.pivotVelocityRadPerSec = pivotArmSim.getVelocityRadPerSec();
         inputs.pivotCurrentDrawAmps = pivotArmSim.getCurrentDrawAmps();
 
-        inputs.pivotPosition = currentPosition;
+        inputs.pivotPosition = Rotation2d.fromRadians(pivotArmSim.getAngleRads());
         prevAngleRad = inputs.pivotPosition.getRadians();
 
         inputs.pivotAppliedVolts = pivotAppliedVolts;

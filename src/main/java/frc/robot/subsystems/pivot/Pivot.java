@@ -29,7 +29,7 @@ public class Pivot extends SubsystemBase {
         constants = new Constants.PivotConstants();
         pivotIO = new PivotIOSim(constants);
 
-        setpoint = Rotation2d.fromRotations(constants.kSTARTING_ANGLE_RAD);
+        setpoint = Rotation2d.fromRadians(constants.kSTARTING_ANGLE_RAD);
         CommandScheduler.getInstance().registerSubsystem(this);
     }
 
@@ -51,6 +51,6 @@ public class Pivot extends SubsystemBase {
     }
 
     public Rotation2d getAngle() {
-        return pivotIOInputs.pivotPosition;
+        return setpoint;
     }
 }
