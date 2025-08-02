@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot;
+package frc.robot.constants;
 
 import edu.wpi.first.math.util.Units;
 
@@ -15,6 +15,14 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
+  public static final Mode currentMode = Mode.COMP;
+
+  public enum Mode {
+    COMP,
+    SIM,
+    TEST
+  }
+
   public static final class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }

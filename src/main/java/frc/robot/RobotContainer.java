@@ -4,10 +4,10 @@
 
 package frc.robot;
 
-import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.pivot.RunPivotRaw;
+import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.pivot.Pivot;
 import edu.wpi.first.wpilibj.XboxController;

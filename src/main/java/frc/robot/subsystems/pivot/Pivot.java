@@ -5,7 +5,9 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import frc.robot.constants.Constants;
+import frc.robot.constants.pivot.PivotConfigComp;
+import frc.robot.constants.pivot.PivotConfigSim;
 
 public class Pivot extends SubsystemBase {
     private static Pivot instance = null;
@@ -26,8 +28,20 @@ public class Pivot extends SubsystemBase {
 
     private Pivot() {
         // IO
+        switch (Constants.currentMode) {
+            case COMP:
+                pivotIO = new PivotIOTalonFX(PivotConfigComp.getInstance());
+                break;
+            case SIM:
+                pivotIO = new PivotIOSim(PivotConfigSim.getInstance());
+                break;
+            case TEST:
+                pivotIO = new PivotIOSim(PivotConfigSim.getInstance());
+                break;
+            default:
+                throw new RuntimeException("Invalid robot mode for Pivot IO");
+        }
         constants = new Constants.PivotConstants();
-        pivotIO = new PivotIOSim(constants);
 
         setpoint = Rotation2d.fromRadians(constants.kSTARTING_ANGLE_RAD);
         CommandScheduler.getInstance().registerSubsystem(this);

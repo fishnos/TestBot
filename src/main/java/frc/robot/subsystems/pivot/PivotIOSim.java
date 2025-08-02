@@ -12,7 +12,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import frc.robot.Constants;
+import frc.robot.constants.pivot.*;
+import frc.robot.constants.Constants;
 
 public class PivotIOSim implements PivotIO {
     private DCMotor pivotFalcon500 = DCMotor.getKrakenX60Foc(1);
@@ -33,16 +34,16 @@ public class PivotIOSim implements PivotIO {
 
     private Rotation2d currentPosition = new Rotation2d();
 
-    public PivotIOSim(Constants.PivotConstants pivotConstants) {
+    public PivotIOSim(PivotConfigBase config) {
         this.pivotArmSim = new SingleJointedArmSim(
             pivotFalcon500,
-            pivotConstants.kPIVOT_MOTOR_TO_OUTPUT_SHAFT_RATIO,
-            pivotConstants.kJKG_METERS_SQUARED,
-            pivotConstants.kPIVOT_LENGTH_METERS,
-            pivotConstants.kMIN_ANGLE_RAD,
-            pivotConstants.kMAX_ANGLE_RAD,
+            config.getMotorToOutputShaftRatio(),
+            Constants.PivotConstants.kJKG_METERS_SQUARED,
+            Constants.PivotConstants.kPIVOT_LENGTH_METERS,
+            Units.rotationsToRadians(config.getMinAngleRotations()),
+            Units.rotationsToRadians(config.getMaxAngleRotations()),
             true,
-            pivotConstants.kSTARTING_ANGLE_RAD
+            Units.rotationsToRadians(config.getStartingAngleRotations())
         );
 
         this.pivotFeedback = new PIDController(50, 0, 10);
@@ -51,12 +52,12 @@ public class PivotIOSim implements PivotIO {
         this.pivotFeedforward = new ArmFeedforward(0, 0, 0, 0);
 
         this.pivotTrapProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
-            Units.rotationsToRadians(3.0),
-            12 / 8.0 //divide supply voltage, 12V, by 8 (the acceleration constant)
+            Units.rotationsToRadians(config.getMotionMagicCruiseVelocityRotationsPerSec()),
+            12 / config.getMotionMagicExpoKA() //divide supply voltage, 12V, by 8 (the acceleration constant)
         ));
 
-        currentSetpoint = new State(pivotConstants.kSTARTING_ANGLE_RAD, 0);
-        prevAngleRad = MathUtil.angleModulus(pivotConstants.kSTARTING_ANGLE_RAD);
+        currentSetpoint = new State(Units.rotationsToRadians(config.getStartingAngleRotations()), 0);
+        prevAngleRad = MathUtil.angleModulus(Units.rotationsToRadians(config.getStartingAngleRotations()));
     }
 
     @Override
