@@ -1,6 +1,7 @@
 package frc.robot.subsystems.pivot;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Fahrenheit;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -19,11 +20,13 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.pivot.PivotConfigBase;
 import frc.robot.lib.util.PhoenixUtil;
@@ -36,6 +39,8 @@ public class PivotIOTalonFX implements PivotIO {
 
     private final StatusSignal<Angle> pivotPositionStatusSignal;
     private final StatusSignal<AngularVelocity> pivotVelocityStatusSignal;
+
+    private final StatusSignal<Temperature> pivotTemperatureStatusSignal;
 
     private final StatusSignal<Voltage> pivotAppliedVolts;
     private final StatusSignal<Current> pivotTorqueCurrent;
@@ -105,6 +110,8 @@ public class PivotIOTalonFX implements PivotIO {
         pivotAppliedVolts = pivotMotor.getMotorVoltage().clone();
         pivotTorqueCurrent = pivotMotor.getStatorCurrent().clone();
 
+        pivotTemperatureStatusSignal = pivotMotor.getDeviceTemp().clone();
+
         pivotClosedLoopReference = pivotMotor.getClosedLoopReference().clone();
         pivotClosedLoopOutput = pivotMotor.getClosedLoopOutput().clone();
 
@@ -115,7 +122,8 @@ public class PivotIOTalonFX implements PivotIO {
             pivotPositionStatusSignal,
             pivotVelocityStatusSignal,
             pivotClosedLoopReference,
-            pivotClosedLoopOutput
+            pivotClosedLoopOutput,
+            pivotTemperatureStatusSignal
         );
 
         pivotMotor.optimizeBusUtilization();
@@ -131,7 +139,8 @@ public class PivotIOTalonFX implements PivotIO {
                     pivotPositionStatusSignal,
                     pivotVelocityStatusSignal,
                     pivotClosedLoopReference,
-                    pivotClosedLoopOutput
+                    pivotClosedLoopOutput,
+                    pivotTemperatureStatusSignal
                 ).isOK()
             );
         
@@ -145,6 +154,8 @@ public class PivotIOTalonFX implements PivotIO {
         inputs.pivotAppliedVolts = pivotAppliedVolts.getValue().in(Volts);
         inputs.pivotCurrentDrawAmps = pivotTorqueCurrent.getValue().in(Amps);
 
+        inputs.pivotTemperature = pivotTemperatureStatusSignal.getValue().in(Fahrenheit);
+
         Logger.recordOutput("PivotComp/pivotClosedLoopReference", 2 * Math.PI * pivotClosedLoopReference.getValueAsDouble() + kSTARTING_ANGLE_RAD); //print loop reference (the value the pid targets)
         Logger.recordOutput("PivotComp/pivotClosedLoopOutput", pivotClosedLoopOutput.getValueAsDouble()); //print loop output
     }
@@ -154,7 +165,15 @@ public class PivotIOTalonFX implements PivotIO {
         double positionRotations = desiredPosition.getRotations();
 
         pivotMotor.getConfigurator().apply(pivotConfig.MotionMagic.withMotionMagicCruiseVelocity(3));
-        pivotMotor.setControl(pivotPositionRequest.withPosition(positionRotations));
+        pivotMotor.setControl(
+            pivotPositionRequest.withPosition(
+                MathUtil.clamp(
+                    positionRotations,
+                    config.getMinAngleRotations(),
+                    config.getMaxAngleRotations()
+                )
+            )
+        );
     }
 
     @Override

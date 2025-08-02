@@ -12,6 +12,8 @@ public interface PivotIO {
         public double pivotAppliedVolts = 0;
         public double pivotCurrentDrawAmps = 0;
 
+        public double pivotTemperature = 0;
+
         public boolean pivotMotorConnected = false;
     }
 

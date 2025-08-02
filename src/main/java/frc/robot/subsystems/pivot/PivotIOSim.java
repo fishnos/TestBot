@@ -23,6 +23,10 @@ public class PivotIOSim implements PivotIO {
     private double prevTimeState = 0;
     private double prevTimeInput = 0;
 
+    private final double kMAX_ANGLE_ROTATIONS;
+    private final double kMIN_ANGLE_ROTATIONS;
+    private final double kSTARTING_ANGLE_RAD;
+
     private final PIDController pivotFeedback;
     private final ArmFeedforward pivotFeedforward;
 
@@ -46,14 +50,27 @@ public class PivotIOSim implements PivotIO {
             Units.rotationsToRadians(config.getStartingAngleRotations())
         );
 
-        this.pivotFeedback = new PIDController(50, 0, 10);
+        kMIN_ANGLE_ROTATIONS = config.getMinAngleRotations();
+        kMAX_ANGLE_ROTATIONS = config.getMaxAngleRotations();
+        kSTARTING_ANGLE_RAD = Units.rotationsToRadians(config.getStartingAngleRotations());
+
+        this.pivotFeedback = new PIDController(
+            config.getKP(),
+            config.getKI(),
+            config.getKD()
+        );
         pivotFeedback.enableContinuousInput(-Math.PI, Math.PI);
 
-        this.pivotFeedforward = new ArmFeedforward(0, 0, 0, 0);
+        this.pivotFeedforward = new ArmFeedforward(
+            config.getKS(),
+            config.getKG(),
+            config.getKV(),
+            config.getKA()
+        );
 
         this.pivotTrapProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(
             Units.rotationsToRadians(config.getMotionMagicCruiseVelocityRotationsPerSec()),
-            12 / config.getMotionMagicExpoKA() //divide supply voltage, 12V, by 8 (the acceleration constant)
+            12.0 / config.getMotionMagicExpoKA() //divide supply voltage, 12V, by 8 (the acceleration constant)
         ));
 
         currentSetpoint = new State(Units.rotationsToRadians(config.getStartingAngleRotations()), 0);
@@ -78,6 +95,14 @@ public class PivotIOSim implements PivotIO {
 
     @Override
     public void setAngle(Rotation2d desiredPosition) {
+        desiredPosition = Rotation2d.fromRadians(
+            MathUtil.clamp(
+                desiredPosition.getRadians(),
+                Units.rotationsToRadians(kMIN_ANGLE_ROTATIONS),
+                Units.rotationsToRadians(kMAX_ANGLE_ROTATIONS)
+            )
+        );
+
         currentPosition = desiredPosition;
         double dt = Timer.getTimestamp() - prevTimeState;
         prevTimeState = Timer.getTimestamp();
@@ -95,12 +120,12 @@ public class PivotIOSim implements PivotIO {
             pivotFeedback.calculate(prevAngleRad, currentSetpoint.position);
         pivotAppliedVolts = voltage;
 
-        setVoltage(voltage);
+        pivotArmSim.setInputVoltage(voltage);
     }
 
     @Override
-    public void setTorqueCurrentFOC(double toruqeCurrent) {
-        pivotAppliedVolts = toruqeCurrent;
-        pivotArmSim.setInputVoltage(toruqeCurrent);
+    public void setTorqueCurrentFOC(double torqueCurrent) {
+        pivotAppliedVolts = torqueCurrent;
+        pivotArmSim.setInputVoltage(torqueCurrent);
     }
 }

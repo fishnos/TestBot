@@ -7,6 +7,7 @@ package frc.robot;
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
 import frc.robot.commands.pivot.RunPivotRaw;
+import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.pivot.Pivot;
@@ -45,8 +46,8 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    xboxDriver = new XboxController(2);
-    xboxOperator = new XboxController(3);
+    xboxOperator = new XboxController(Constants.OperatorConstants.kOperatorControllerPort);
+    xboxDriver = new XboxController(Constants.OperatorConstants.kDriverControllerPort);
 
     pivot = Pivot.getInstance();
 

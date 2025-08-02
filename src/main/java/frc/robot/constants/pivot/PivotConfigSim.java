@@ -100,12 +100,12 @@ public class PivotConfigSim implements PivotConfigBase {
 
     @Override
     public double getMotionMagicCruiseVelocityRotationsPerSec() {
-        return 3;
+        return 3.0;
     }
 
     @Override
     public double getToleranceDegrees() {
-        return 1;
+        return 1.0;
     }
 
     // Neutral mode
