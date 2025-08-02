@@ -11,9 +11,12 @@ public interface PivotIO {
 
         public double pivotAppliedVolts = 0;
         public double pivotCurrentDrawAmps = 0;
+
+        public boolean pivotMotorConnected = false;
     }
 
     public default void updateInputs(PivotIOInputs inputs) {}
     public default void setAngle(Rotation2d desiredPosition) {}
     public default void setVoltage(double voltage) {}
+    public default void setTorqueCurrentFOC(double torqueCurrent) {}
 }

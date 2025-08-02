@@ -15,7 +15,7 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final Mode currentMode = Mode.COMP;
+  public static final Mode currentMode = Mode.SIM;
 
   public enum Mode {
     COMP,
