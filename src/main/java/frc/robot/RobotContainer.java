@@ -37,8 +37,8 @@ public class RobotContainer {
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final Pivot pivot;
 
-  private XboxController xboxDriver;
   private XboxController xboxOperator;
+  private XboxController xboxDriver;
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
