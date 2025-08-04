@@ -73,7 +73,7 @@ public class PivotIOSim implements PivotIO {
             12.0 / config.getMotionMagicExpoKA() //divide supply voltage, 12V, by 8 (the acceleration constant)
         ));
 
-        currentSetpoint = new State(Units.rotationsToRadians(config.getStartingAngleRotations()), 0);
+        currentSetpoint = new State(Units.rotationsToRadians(config.getStartingAngleRotations()), pivotArmSim.getVelocityRadPerSec());
         prevAngleRad = MathUtil.angleModulus(Units.rotationsToRadians(config.getStartingAngleRotations()));
     }
 

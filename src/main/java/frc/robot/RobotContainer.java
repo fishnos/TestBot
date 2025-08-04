@@ -6,10 +6,13 @@ package frc.robot;
 
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.elevator.simple.ElevatorStow;
+import frc.robot.commands.elevator.simple.ElevatorUp;
 import frc.robot.commands.pivot.RunPivotRaw;
 import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.pivot.Pivot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -36,6 +39,7 @@ public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final Pivot pivot;
+  private final Elevator elevator;
 
   private XboxController xboxOperator;
   private XboxController xboxDriver;
@@ -50,8 +54,21 @@ public class RobotContainer {
     xboxDriver = new XboxController(Constants.OperatorConstants.kDriverControllerPort);
 
     pivot = Pivot.getInstance();
+    elevator = Elevator.getInstance();
 
     pivot.setDefaultCommand(new RunPivotRaw(xboxOperator));
+    
+    new Trigger(
+      () -> (
+        xboxOperator.getBButtonPressed()
+      )
+    ).whileTrue(new ElevatorUp());
+
+    new Trigger(
+      () -> (
+        xboxOperator.getAButtonPressed()
+      )
+    ).whileTrue(new ElevatorStow());
 
     // Configure the trigger bindings
     configureBindings();

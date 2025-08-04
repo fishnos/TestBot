@@ -1,12 +1,9 @@
 package frc.robot.subsystems.drivetrain.swerve.gyro;
 
 import static edu.wpi.first.units.Units.Fahrenheit;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-
-import java.io.ObjectInputFilter.Status;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
