@@ -12,6 +12,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicExpoTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.StrictFollower;
 import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -185,6 +186,8 @@ public class ElevatorIOTalonFX implements ElevatorIO {
 
         elevatorMotor1.optimizeBusUtilization();
         elevatorMotor2.optimizeBusUtilization();
+
+        elevatorMotor2.setControl(new StrictFollower(config.getCanID1()).withUpdateFreqHz(1000));
     }
 
     @Override
