@@ -25,7 +25,7 @@ public final class Constants {
 
   public static final class OperatorConstants {
     public static final double kDEADBAND_LEFT_Y = 0.1;
-    public static final double kDEADBAND_RIGHT_X = 0.1;
+    public static final double kDEADBAND_LEFT_X = 0.1;
 
     public static final int kOperatorControllerPort = 2;
     public static final int kDriverControllerPort = 3;

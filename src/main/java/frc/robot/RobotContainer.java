@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.elevator.RunElevatorRaw;
 import frc.robot.commands.elevator.simple.ElevatorStow;
 import frc.robot.commands.elevator.simple.ElevatorUp;
 import frc.robot.commands.pivot.RunPivotRaw;
@@ -57,6 +58,7 @@ public class RobotContainer {
     elevator = Elevator.getInstance();
 
     pivot.setDefaultCommand(new RunPivotRaw(xboxOperator));
+    elevator.setDefaultCommand(new RunElevatorRaw(xboxOperator));
     
     new Trigger(
       () -> (

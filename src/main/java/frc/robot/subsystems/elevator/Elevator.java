@@ -9,7 +9,6 @@ import frc.robot.constants.Constants;
 import frc.robot.constants.elevator.ElevatorConfigBase;
 import frc.robot.constants.elevator.ElevatorConfigComp;
 import frc.robot.constants.elevator.ElevatorConfigSim;
-import frc.robot.subsystems.elevator.ElevatorIO.ElevatorIOInputs;
 
 public class Elevator extends SubsystemBase {
     private static Elevator instance = null;
@@ -53,12 +52,12 @@ public class Elevator extends SubsystemBase {
         elevatorIO.updateInputs(elevatorIOInputs);
         Logger.processInputs("Elevator", elevatorIOInputs);
 
-        setpoint = elevatorIOInputs.elevatorPositionMeters;
         elevatorIO.setPosition(setpoint);
     }
 
     public void setHeight(double heightMeters) {
-        elevatorIO.setPosition(heightMeters);
+        setpoint = heightMeters;
+        Logger.recordOutput("Elevator/desiredMeters", setpoint);
     }
 
     public void setVoltage(double voltage) {
