@@ -111,7 +111,7 @@ public class Phoenix6Odometry {
                     averageLoopTime = lowPass.calculate(peakRemover.calculate(currentTime - lastTime)); //calculate the average loop time using a low pass filter and a peak remover (median filter)
                     if (status.isOK()) { //if the status (the base status signal) is okay, then proceed with the data acquisition
                         successfulDataAcquisitions++;
-                    } 
+                    }
 
                     else {
                         failedDataAcquisitions++;

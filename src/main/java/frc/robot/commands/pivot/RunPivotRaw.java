@@ -4,9 +4,9 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.constants.Constants;
+import frc.robot.lib.input.XboxController;
 import frc.robot.subsystems.pivot.Pivot;
 
 public class RunPivotRaw extends Command {

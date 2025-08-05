@@ -131,5 +131,8 @@ public class ElevatorIOSim implements ElevatorIO {
             elevatorFeedforward.calculate(currentSetpoint.position, currentSetpoint.velocity) +
             elevatorFeedback.calculate(prevHeightMeters, currentSetpoint.position);
         elevatorAppliedVolts = voltage;
+
+        elevatorSim.setInputVoltage(voltage);
+        Logger.recordOutput("Elevator/appliedVolts", elevatorAppliedVolts);
     }
 }

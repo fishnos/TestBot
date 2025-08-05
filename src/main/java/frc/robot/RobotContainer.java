@@ -6,17 +6,19 @@ package frc.robot;
 
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.elevator.HoldElevatorPosition;
 import frc.robot.commands.elevator.RunElevatorRaw;
 import frc.robot.commands.elevator.simple.ElevatorStow;
 import frc.robot.commands.elevator.simple.ElevatorUp;
 import frc.robot.commands.pivot.RunPivotRaw;
 import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.OperatorConstants;
+import frc.robot.lib.input.XboxController;
 import frc.robot.subsystems.ExampleSubsystem;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.pivot.Pivot;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 
@@ -58,19 +60,19 @@ public class RobotContainer {
     elevator = Elevator.getInstance();
 
     pivot.setDefaultCommand(new RunPivotRaw(xboxOperator));
-    elevator.setDefaultCommand(new RunElevatorRaw(xboxOperator));
+    elevator.setDefaultCommand(new HoldElevatorPosition());
     
     new Trigger(
       () -> (
-        xboxOperator.getBButtonPressed()
+        xboxOperator.getBButton().getAsBoolean()
       )
-    ).whileTrue(new ElevatorUp());
+    ).onTrue(new ElevatorUp());
 
     new Trigger(
       () -> (
-        xboxOperator.getAButtonPressed()
+        xboxOperator.getAButton().getAsBoolean()
       )
-    ).whileTrue(new ElevatorStow());
+    ).onTrue(new ElevatorStow());
 
     // Configure the trigger bindings
     configureBindings();

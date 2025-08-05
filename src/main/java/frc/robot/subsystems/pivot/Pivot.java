@@ -56,6 +56,8 @@ public class Pivot extends SubsystemBase {
         Logger.processInputs("Pivot", pivotIOInputs);
 
         pivotIO.setAngle(setpoint);
+
+        Logger.recordOutput("Pivot/reachedSetpoint", reachedSetpoint());
     }
 
     public void setTorqueCurrentFOC(double torqueCurrent) {

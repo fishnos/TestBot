@@ -53,6 +53,8 @@ public class Elevator extends SubsystemBase {
         Logger.processInputs("Elevator", elevatorIOInputs);
 
         elevatorIO.setPosition(setpoint);
+
+        Logger.recordOutput("Elevator/reachedSetpoint", reachedSetpoint());
     }
 
     public void setHeight(double heightMeters) {
@@ -66,6 +68,10 @@ public class Elevator extends SubsystemBase {
 
     public void setTorqueCurrentFOC(double torqueCurrent) {
         elevatorIO.setTorqueCurrentFOC(torqueCurrent);
+    }
+
+    public double getCurrentHeight() {
+        return elevatorIOInputs.elevatorPositionMeters;
     }
 
     public boolean reachedSetpoint() {
