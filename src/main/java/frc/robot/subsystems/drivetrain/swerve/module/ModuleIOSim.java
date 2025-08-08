@@ -2,16 +2,20 @@ package frc.robot.subsystems.drivetrain.swerve.module;
 
 import java.util.Optional;
 
+import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
 import frc.robot.constants.drivetrain.swerve.module.SwerveModuleGeneralConfigBase;
 
 public class ModuleIOSim implements ModuleIO {
@@ -34,16 +38,21 @@ public class ModuleIOSim implements ModuleIO {
     private final SimpleMotorFeedforward steerFeedforward;
 
     private final SlewRateLimiter driveSlewLimiter;
-    private final State currentDriveSetpoint;
+    private State currentDriveState;
 
     private final TrapezoidProfile steerTrapProfile;
-    private final State currentSteerSetpoint;
+    private State currentSteerState;
 
     private final PIDController driveFeedback;
     private final PIDController steerFeedback;
 
     private double prevDrivePosition = 0;
     private double prevSteerPosition = 0;
+
+    private double prevTimeInput = 0;
+    private double prevTimeState = 0;
+
+    private double currentUnwrappedAngleRad = 0;
 
     public ModuleIOSim(SwerveModuleGeneralConfigBase config, int moduleID) {
         this.moduleID = moduleID;
@@ -102,7 +111,7 @@ public class ModuleIOSim implements ModuleIO {
             -config.getDriveMotionMagicVelocityDecelerationMetersPerSecSec(),
             0
         );
-        currentDriveSetpoint = new State(0, 0);
+        currentDriveState = new State(0, 0);
 
         steerTrapProfile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(
@@ -110,22 +119,57 @@ public class ModuleIOSim implements ModuleIO {
                 12.0 / config.getSteerMotionMagicExpoKA()
             )
         );
-        currentSteerSetpoint = new State(0, 0);
+        currentSteerState = new State(0, 0);
     }
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
+        double dt = Timer.getTimestamp() - prevTimeInput;
+        prevTimeInput = Timer.getTimestamp();
 
-    }
+        driveSim.update(dt);
+        steerSim.update(dt);
 
-    @Override
-    public void setDriveVoltage(double voltage) {
+        inputs.timestamp = Timer.getTimestamp();
 
+        inputs.driveAppliedVolts = driveSim.getInputVoltage();
+        inputs.steerAppliedVolts = steerSim.getInputVoltage();
+
+        inputs.driveCurrentDrawAmps = driveSim.getCurrentDrawAmps();
+        inputs.steerCurrentDrawAmps = steerSim.getCurrentDrawAmps();
+
+        inputs.driveVelocityMetersPerSec = driveSim.getAngularVelocityRPM() * Math.PI * 2 * config.getDriveWheelRadiusMeters();
+        inputs.steerVelocityRadiansPerSec = steerSim.getAngularVelocityRadPerSec();
+
+        inputs.drivePositionMeters += inputs.driveVelocityMetersPerSec * dt;
+        inputs.steerPositionRadians = new Rotation2d(
+            MathUtil.angleModulus(
+                inputs.steerPositionRadians.getRadians() +
+                steerSim.getAngularVelocityRadPerSec() * dt
+            )
+        );
+
+        double angleError = inputs.steerPositionRadians.getRadians() - prevSteerPosition;
+        prevSteerPosition = inputs.steerPositionRadians.getRadians();
+        prevDrivePosition = inputs.drivePositionMeters;
+
+        angleError = MathUtil.inputModulus(angleError, -Math.PI, Math.PI);
+
+        currentUnwrappedAngleRad += angleError;
+
+        currentDriveState = new State(inputs.drivePositionMeters, inputs.driveVelocityMetersPerSec);
+        currentSteerState = new State(inputs.steerPositionRadians.getRadians(), inputs.steerVelocityRadiansPerSec);
+        Logger.recordOutput("Swerve/Module" + moduleID + "/currentSteerStateRad", inputs.steerPositionRadians.getRadians());
     }
 
     @Override
     public void setState(SwerveModuleState state, Optional<Double> feedforwardTorqueCurrent) {
-        
+        double dt = Timer.getTimestamp() - prevTimeState;
+        prevTimeState = Timer.getTimestamp();
     }
 
+    @Override
+    public void setDriveVoltage(double voltage) {
+        driveSim.setInputVoltage(voltage);
+    }
 }
