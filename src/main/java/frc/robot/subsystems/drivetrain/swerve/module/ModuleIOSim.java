@@ -156,6 +156,7 @@ public class ModuleIOSim implements ModuleIO {
         );
 
         double angleError = inputs.steerPositionRadians.getRadians() - prevSteerPosition;
+
         prevSteerPosition = inputs.steerPositionRadians.getRadians();
         prevDrivePosition = inputs.drivePositionMeters;
 
@@ -222,7 +223,7 @@ public class ModuleIOSim implements ModuleIO {
         double driveVolts = 
             driveFeedforward.calculate(driveSetpointMetersPerSec) +
             driveFeedback.calculate(currentDriveState.velocity, driveSetpointMetersPerSec);
-        //simply drive forward with feedforward (only accounting for velocity) and then account for error with positional PID
+        //simply steer with feedforward (only accounting for velocity) and then account for error with positional PID (position, not velocity)
         double steerVolts =
             steerFeedforward.calculateWithVelocities(
                 currentSteerSetpoint.velocity, 
