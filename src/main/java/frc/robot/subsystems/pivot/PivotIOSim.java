@@ -2,6 +2,8 @@ package frc.robot.subsystems.pivot;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.sim.TalonFXSimState;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
@@ -16,7 +18,7 @@ import frc.robot.constants.pivot.*;
 import frc.robot.constants.Constants;
 
 public class PivotIOSim implements PivotIO {
-    private DCMotor pivotFalcon500 = DCMotor.getKrakenX60Foc(1);
+    private final DCMotor pivotKrakenX60 = DCMotor.getKrakenX60Foc(1);
 
     private SingleJointedArmSim pivotArmSim;
 
@@ -38,9 +40,11 @@ public class PivotIOSim implements PivotIO {
 
     private Rotation2d currentPosition = new Rotation2d();
 
+    // private TalonFXSimState pivotFalconSimState;
+
     public PivotIOSim(PivotConfigBase config) {
         this.pivotArmSim = new SingleJointedArmSim(
-            pivotFalcon500,
+            pivotKrakenX60,
             config.getMotorToOutputShaftRatio(),
             Constants.PivotConstants.kJKG_METERS_SQUARED,
             Constants.PivotConstants.kPIVOT_LENGTH_METERS,

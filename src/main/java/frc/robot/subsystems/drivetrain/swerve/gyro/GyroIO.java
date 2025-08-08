@@ -18,7 +18,7 @@ public interface GyroIO {
             new Rotation2d(), // pitch Rate (y)
             new Rotation2d()  // yaw rate (z)
         };
-        public Translation2d fieldRelativeAccelMetersPerSec = new Translation2d();
+        public Translation2d fieldRelativeAccelMetersPerSec = new Translation2d(); //x and y accel
     }
 
     public default void updateInputs(GyroIOInputs inputs) {}
