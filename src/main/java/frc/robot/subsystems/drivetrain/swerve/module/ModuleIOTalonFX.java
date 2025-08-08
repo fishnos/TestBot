@@ -1,10 +1,20 @@
 package frc.robot.subsystems.drivetrain.swerve.module;
 
+import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Fahrenheit;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
+import java.util.Optional;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.TorqueCurrentFOC;
+import com.ctre.phoenix6.controls.MotionMagicTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -12,19 +22,21 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 
+import edu.wpi.first.hal.HALUtil;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import frc.robot.constants.drivetrain.swerve.module.SwerveModuleGeneralConfigBase;
 import frc.robot.constants.drivetrain.swerve.module.SwerveModuleSpecificConfigBase;
 import frc.robot.lib.util.PhoenixUtil;
-import frc.robot.subsystems.drivetrain.swerve.module.ModuleIO.ModuleIOInputs;
 
 public class ModuleIOTalonFX implements ModuleIO {
     private final SwerveModuleGeneralConfigBase generalConfig;
@@ -63,10 +75,16 @@ public class ModuleIOTalonFX implements ModuleIO {
     private final StatusSignal<AngularVelocity> steerEncoderVelocity;
 
     private final VelocityTorqueCurrentFOC driveVelocityRequest = new VelocityTorqueCurrentFOC(0);
+    private final MotionMagicTorqueCurrentFOC steerMotorRequest = new MotionMagicTorqueCurrentFOC(0);
 
     private final Debouncer driveConnectedDebouncer = new Debouncer(0.25, Debouncer.DebounceType.kBoth);
     private final Debouncer steerConnectedDebouncer = new Debouncer(0.25, Debouncer.DebounceType.kBoth);
     private final Debouncer steerEncoderConnectedDebouncer = new Debouncer(0.25, Debouncer.DebounceType.kBoth);
+
+    private double currentDriveVelocity = 0;
+
+    private double lastSteerPosition = 0;
+    private Rotation2d lastSteerSetpoint = new Rotation2d();
 
     public ModuleIOTalonFX(SwerveModuleGeneralConfigBase generalConfig, SwerveModuleSpecificConfigBase specificConfig, int moduleID) {
         this.moduleID = moduleID;
@@ -102,7 +120,7 @@ public class ModuleIOTalonFX implements ModuleIO {
         driveConfig.ClosedLoopGeneral.ContinuousWrap = false;
         driveConfig.Feedback.SensorToMechanismRatio = 
             generalConfig.getDriveMotorToOutputShaftRatio() / 
-            generalConfig.getDriveWheelRadiusMeters() * 2 * Math.PI;
+            (generalConfig.getDriveWheelRadiusMeters() * 2 * Math.PI);
         
         driveConfig.MotorOutput.NeutralMode = 
             generalConfig.getIsDriveNeutralModeBrake() ? 
@@ -168,7 +186,7 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         steerConfig.ClosedLoopGeneral.ContinuousWrap = true;
         steerConfig.Feedback.SensorToMechanismRatio = 1; //use the cancoder position directly, no ratio needed
-        steerConfig.Feedback.FeedbackRemoteSensorID = specificConfig.getSteerCanId();
+        steerConfig.Feedback.FeedbackRemoteSensorID = specificConfig.getCancoderCanId(); //use the cancoder for remote feedback
         steerConfig.Feedback.FeedbackSensorSource = generalConfig.getSteerCancoderFeedbackSensorSource(); //fuse cancoder position with motor position
         steerConfig.Feedback.RotorToSensorRatio = generalConfig.getSteerRotorToSensorRatio(); //how many times the motor turns for one rotation
 
@@ -223,32 +241,55 @@ public class ModuleIOTalonFX implements ModuleIO {
 
         driveMotor.optimizeBusUtilization();
         steerMotor.optimizeBusUtilization();
+        steerEncoder.optimizeBusUtilization();
     }
 
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
+        BaseStatusSignal.refreshAll(
+            drivePosition,
+            driveVelocity,
+            driveAcceleration,
+            driveTorqueCurrent,
+            driveAppliedVoltage,
+            driveTemp,
+
+            steerMotorPosition,
+            steerMotorVelocity,
+            steerMotorAcceleration,
+            steerMotorAppliedVoltage,
+            steerMotorTorqueCurrent,
+            steerMotorTemperature,
+
+            steerEncoderAbsolutePosition,
+            steerEncoderPosition,
+            steerEncoderVelocity
+        );
+
         inputs.driveConnected = 
             driveConnectedDebouncer.calculate(
                 BaseStatusSignal.refreshAll(
-                    drivePosition,
-                    driveVelocity,
                     driveAcceleration,
                     driveTorqueCurrent,
                     driveAppliedVoltage,
                     driveTemp
-                ).isOK()
+                ).isOK() && BaseStatusSignal.isAllGood(
+                    drivePosition,
+                    driveVelocity
+                )
             );
         
         inputs.steerConnected =
             steerConnectedDebouncer.calculate(
                 BaseStatusSignal.refreshAll(
-                    steerMotorPosition,
-                    steerMotorVelocity,
                     steerMotorAcceleration,
                     steerMotorAppliedVoltage,
                     steerMotorTorqueCurrent,
                     steerMotorTemperature 
-                ).isOK()
+                ).isOK() && BaseStatusSignal.isAllGood(
+                    steerMotorPosition,
+                    steerMotorVelocity
+                )
             );
         inputs.steerEncoderConnected =
             steerEncoderConnectedDebouncer.calculate(
@@ -258,5 +299,60 @@ public class ModuleIOTalonFX implements ModuleIO {
                     steerEncoderVelocity
                 ).isOK()
             );
+
+        inputs.driveAppliedVolts = driveAppliedVoltage.getValue().in(Volts);
+        inputs.driveCurrentDrawAmps = driveTorqueCurrent.getValue().in(Amps);
+        inputs.driveTemperature = driveTemp.getValue().in(Fahrenheit);
+
+        inputs.drivePositionMeters = 
+            BaseStatusSignal.getLatencyCompensatedValue(drivePosition, driveVelocity).in(Rotations);
+        inputs.driveVelocityMetersPerSec =
+            BaseStatusSignal.getLatencyCompensatedValue(driveVelocity, driveAcceleration).in(RotationsPerSecond);
+        currentDriveVelocity = inputs.driveVelocityMetersPerSec;
+        
+        inputs.steerAppliedVolts = steerMotorAppliedVoltage.getValue().in(Volts);
+        inputs.steerTemperature = steerMotorTemperature.getValue().in(Fahrenheit);
+        inputs.steerCurrentDrawAmps = steerMotorTorqueCurrent.getValue().in(Amps);
+
+        inputs.steerPositionRadians = 
+            new Rotation2d(
+                BaseStatusSignal.getLatencyCompensatedValue(steerMotorPosition, steerMotorVelocity).in(Radians)
+            );
+        lastSteerPosition = inputs.steerPositionRadians.getRadians();
+        inputs.steerVelocityRadiansPerSec = 
+            BaseStatusSignal.getLatencyCompensatedValue(steerMotorVelocity, steerMotorAcceleration).in(RadiansPerSecond);
+
+        inputs.timestamp = HALUtil.getFPGATime() / 1e6; //seconds
+    }
+
+    @Override
+    public void setState(SwerveModuleState state, Optional<Double> accelerationMetersPerSec) {
+        double driveAccel = 
+            driveAccelLimiter.calculate(
+                accelerationMetersPerSec.isPresent() ?
+                accelerationMetersPerSec.get().doubleValue() :
+                0
+            );
+            
+        double cosCompensantion = 
+            Math.max(0.0, Math.cos(Math.abs(MathUtil.angleModulus(lastSteerSetpoint.getRadians() - lastSteerPosition))));
+        
+        driveMotor.setControl(
+            driveVelocityRequest.withVelocity(
+                MathUtil.clamp(
+                    state.speedMetersPerSecond,
+                    -generalConfig.getDriveMaxVelocityMetersPerSec(),
+                    generalConfig.getDriveMaxVelocityMetersPerSec()
+                ) * cosCompensantion
+            ).withAcceleration(driveAccel)
+        );
+
+        steerMotor.setControl(
+            steerMotorRequest.withPosition(
+                state.angle.getRotations()
+            )
+        );
+
+        lastSteerSetpoint = state.angle;
     }
 }
