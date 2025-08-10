@@ -159,7 +159,6 @@ public class ModuleIOSim implements ModuleIO {
 
         double angleError = inputs.steerPositionRadians.getRadians() - prevSteerPosition;
         prevSteerPosition = inputs.steerPositionRadians.getRadians();
-        prevDrivePosition = inputs.drivePositionMeters;
 
         angleError = MathUtil.inputModulus(angleError, -Math.PI, Math.PI);
         currentUnwrappedAngleRad += angleError;
@@ -186,22 +185,18 @@ public class ModuleIOSim implements ModuleIO {
         double driveAccel = (driveSetpointMetersPerSec - prevDriveDesiredVeloMps) / dt;
 
         if (driveAccel >= 0 && prevDriveDesiredVeloMps >= 0) {
-            driveAccel = Math.copySign(
-                Math.min(Math.abs(driveAccel), config.getDriveMotionMagicVelocityAccelerationMetersPerSecSec()),
-                driveAccel);
-        } else if (driveAccel <= 0 && prevDriveDesiredVeloMps <= 0) {
-            driveAccel = Math.copySign(
-                Math.min(Math.abs(driveAccel), config.getDriveMotionMagicVelocityAccelerationMetersPerSecSec()),
-                driveAccel);
-        } else if (driveAccel >= 0 && prevDriveDesiredVeloMps <= 0) {
-            driveAccel = Math.copySign(
-                Math.min(Math.abs(driveAccel), config.getDriveMotionMagicVelocityDecelerationMetersPerSecSec()),
-                driveAccel);
-        } else if (driveAccel <= 0 && prevDriveDesiredVeloMps >= 0) {
-            driveAccel = Math.copySign(
-                Math.min(Math.abs(driveAccel), config.getDriveMotionMagicVelocityDecelerationMetersPerSecSec()),
-                driveAccel);
-        } else {
+            driveAccel = Math.signum(driveAccel) * Math.min(Math.abs(driveAccel), config.getDriveMotionMagicVelocityAccelerationMetersPerSecSec());
+        } 
+        else if (driveAccel <= 0 && prevDriveDesiredVeloMps <= 0) {
+            driveAccel = Math.signum(driveAccel) * Math.min(Math.abs(driveAccel), config.getDriveMotionMagicVelocityAccelerationMetersPerSecSec());
+        }
+        else if (driveAccel >= 0 && prevDriveDesiredVeloMps <= 0) {
+            driveAccel = Math.signum(driveAccel) * Math.min(Math.abs(driveAccel), config.getDriveMotionMagicVelocityDecelerationMetersPerSecSec());
+        }
+        else if (driveAccel <= 0 && prevDriveDesiredVeloMps >= 0) {
+            driveAccel = Math.signum(driveAccel) * Math.min(Math.abs(driveAccel), config.getDriveMotionMagicVelocityDecelerationMetersPerSecSec());
+        }
+        else {
             driveAccel = 0;
         }
 
@@ -209,12 +204,17 @@ public class ModuleIOSim implements ModuleIO {
         prevDriveDesiredVeloMps = driveSetpointMetersPerSec;
 
         double desiredAngleRad = MathUtil.angleModulus(state.angle.getRadians());
-        double angleError = MathUtil.inputModulus(desiredAngleRad - currentUnwrappedAngleRad, -Math.PI, Math.PI);
+        double angleError = desiredAngleRad - currentUnwrappedAngleRad;
+
+        angleError = MathUtil.inputModulus(angleError, -Math.PI, Math.PI);
+
+        Logger.recordOutput("Swerve/Module" + moduleID + "/desiredAngleRad", desiredAngleRad);
+        Logger.recordOutput("Swerve/Module" + moduleID + "/angleErrorRad", angleError);
 
         currentSteerSetpoint = steerTrapProfile.calculate(
-            dt, currentSteerSetpoint, new State(currentUnwrappedAngleRad + angleError, 0.0));
+            dt, currentSteerState, new State(currentUnwrappedAngleRad + angleError, 0.0));
         State nextSteerSetpoint = steerTrapProfile.calculate(
-            dt * 2.0, currentSteerSetpoint, new State(currentUnwrappedAngleRad + angleError, 0.0));
+            dt * 2, currentSteerSetpoint, new State(currentUnwrappedAngleRad + angleError, 0.0));
 
         Logger.recordOutput("Swerve/Module" + moduleID + "/currentSteerSetpointRad", currentSteerSetpoint.position);
         Logger.recordOutput("Swerve/Module" + moduleID + "/currentSteerSetpointRadPerSec", nextSteerSetpoint.velocity);
@@ -224,9 +224,9 @@ public class ModuleIOSim implements ModuleIO {
             driveFeedback.calculate(currentDriveState.velocity, driveSetpointMetersPerSec);
 
         double steerVolts =
-            steerFeedforward.calculate(
+            steerFeedforward.calculateWithVelocities(
                 currentSteerSetpoint.velocity,
-                (nextSteerSetpoint.velocity - currentSteerSetpoint.velocity) / dt) +
+                (nextSteerSetpoint.velocity)) +
             steerFeedback.calculate(
                 MathUtil.angleModulus(currentSteerState.position),
                 MathUtil.angleModulus(currentSteerSetpoint.position)

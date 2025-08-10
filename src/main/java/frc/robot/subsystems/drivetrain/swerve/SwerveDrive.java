@@ -85,10 +85,10 @@ public class SwerveDrive extends SubsystemBase {
                 };
 
                 moduleIO = new ModuleIO[] {
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[0], 0),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[1], 1),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[2], 2),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[3], 3)
+                    new ModuleIOTalonFX(generalConfig, moduleConfigs[0], 0), //FL
+                    new ModuleIOTalonFX(generalConfig, moduleConfigs[1], 1), //FR
+                    new ModuleIOTalonFX(generalConfig, moduleConfigs[2], 2), //BL
+                    new ModuleIOTalonFX(generalConfig, moduleConfigs[3], 3) //BR
                 };
 
                 for (int i = 0; i < 4; i++) {
@@ -205,9 +205,6 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void periodic() {
-        double dt = Timer.getTimestamp() - prevTimeInput;
-        prevTimeInput = Timer.getTimestamp();
-
         Phoenix6Odometry.getInstance().stateLock.readLock().lock();
         try {
             gyroIO.updateInputs(gyroIOInputs);
@@ -243,7 +240,11 @@ public class SwerveDrive extends SubsystemBase {
         Logger.recordOutput("Swerve/robotRotation", swerveDrivePoseEstimator.getEstimatedPosition().getRotation());
     }
 
-    public void driveRobotRelative(ChassisSpeeds speeds, double dt) {
+    public void driveRobotRelative(ChassisSpeeds speeds) {
+        double dt = Timer.getTimestamp() - prevTimeInput;
+        prevTimeInput = Timer.getTimestamp();
+        dt = Math.max(dt, 1e-3);
+
         Logger.recordOutput("Swerve/desiredRobotRelativeSpeeds", speeds);
 
         SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(speeds);
@@ -257,13 +258,13 @@ public class SwerveDrive extends SubsystemBase {
         }
     }
 
-    public void driveFieldRelative(ChassisSpeeds speeds, double dt) {
+    public void driveFieldRelative(ChassisSpeeds speeds) {
         speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
             speeds,
             gyroIOInputs.orientation[2] //yaw
         );
 
-        driveRobotRelative(speeds, dt);
+        driveRobotRelative(speeds);
     }
 
     public void resetGyro(Rotation2d yaw) {
