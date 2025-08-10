@@ -1,5 +1,6 @@
 package frc.robot.constants.drivetrain.swerve.module.comp;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.constants.drivetrain.swerve.module.SwerveModuleSpecificConfigBase;
 
 public class SwerveModuleSpecificBLConfigComp implements SwerveModuleSpecificConfigBase {
@@ -52,5 +53,10 @@ public class SwerveModuleSpecificBLConfigComp implements SwerveModuleSpecificCon
     @Override
     public double getCancoderOffsetRotations() {
         return -0.596191;
+    }
+
+    @Override
+    public Translation2d getModulePositionFromCenterMeters() {
+        return new Translation2d(-0.381, 0.381);
     }
 }

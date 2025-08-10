@@ -118,7 +118,7 @@ public class ModuleIOSim implements ModuleIO {
 
         steerTrapProfile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(
-                config.getSteerMotionMagicCruiseVelocityRotationsPerSec(),
+                config.getSteerMotionMagicCruiseVelocityRotationsPerSec() * 2 * Math.PI,
                 12.0 / config.getSteerMotionMagicExpoKA()
             )
         );
@@ -143,7 +143,6 @@ public class ModuleIOSim implements ModuleIO {
         inputs.steerCurrentDrawAmps = steerSim.getCurrentDrawAmps();
 
         inputs.driveVelocityMetersPerSec = driveSim.getAngularVelocityRPM() * Math.PI * 2 * config.getDriveWheelRadiusMeters();
-        prevDriveDesiredVeloMps = inputs.driveVelocityMetersPerSec;
 
         inputs.steerVelocityRadiansPerSec = steerSim.getAngularVelocityRadPerSec();
 

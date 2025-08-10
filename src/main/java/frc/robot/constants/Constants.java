@@ -4,7 +4,7 @@
 
 package frc.robot.constants;
 
-import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -26,6 +26,7 @@ public final class Constants {
   public static final class OperatorConstants {
     public static final double kDEADBAND_LEFT_Y = 0.1;
     public static final double kDEADBAND_LEFT_X = 0.1;
+    public static final double kDEADBAND_RIGHT_X = 0.1;
 
     public static final int kOperatorControllerPort = 2;
     public static final int kDriverControllerPort = 3;
@@ -38,5 +39,14 @@ public final class Constants {
     public static final double kMIN_ANGLE_RAD = -46;
     public static final double kMAX_ANGLE_RAD = 125;
     public static final double kSTARTING_ANGLE_RAD = Math.toRadians(0);
+  }
+
+  public static boolean shouldInvertField() {
+    var alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      return alliance.get() == DriverStation.Alliance.Red;
+    } else {
+      return false;
+    }
   }
 }

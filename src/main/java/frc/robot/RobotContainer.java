@@ -6,6 +6,7 @@ package frc.robot;
 
 import frc.robot.commands.Autos;
 import frc.robot.commands.ExampleCommand;
+import frc.robot.commands.drivetrain.swerve.AbsoluteFieldDrive;
 import frc.robot.commands.elevator.HoldElevatorPosition;
 import frc.robot.commands.elevator.RunElevatorRaw;
 import frc.robot.commands.elevator.simple.ElevatorStow;
@@ -15,6 +16,7 @@ import frc.robot.constants.Constants;
 import frc.robot.constants.Constants.OperatorConstants;
 import frc.robot.lib.input.XboxController;
 import frc.robot.subsystems.ExampleSubsystem;
+import frc.robot.subsystems.drivetrain.swerve.SwerveDrive;
 import frc.robot.subsystems.elevator.Elevator;
 import frc.robot.subsystems.pivot.Pivot;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -43,6 +45,7 @@ public class RobotContainer {
   private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final Pivot pivot;
   private final Elevator elevator;
+  private final SwerveDrive swerve;
 
   private XboxController xboxOperator;
   private XboxController xboxDriver;
@@ -58,7 +61,9 @@ public class RobotContainer {
 
     pivot = Pivot.getInstance();
     elevator = Elevator.getInstance();
+    swerve = SwerveDrive.getInstance();
 
+    swerve.setDefaultCommand(new AbsoluteFieldDrive(xboxDriver));
     pivot.setDefaultCommand(new RunPivotRaw(xboxOperator));
     elevator.setDefaultCommand(new HoldElevatorPosition());
     
