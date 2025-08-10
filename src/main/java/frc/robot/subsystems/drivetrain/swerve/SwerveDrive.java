@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.drivetrain.swerve.module.ModuleIO;
 import frc.robot.subsystems.drivetrain.swerve.module.ModuleIOInputsAutoLogged;
+import frc.robot.subsystems.drivetrain.swerve.module.ModuleIOSim;
 import frc.robot.subsystems.drivetrain.swerve.module.ModuleIOTalonFX;
 import frc.robot.constants.Constants;
 import frc.robot.constants.drivetrain.swerve.module.SwerveModuleGeneralConfigBase;
@@ -125,10 +126,10 @@ public class SwerveDrive extends SubsystemBase {
                 };
 
                 moduleIO = new ModuleIO[] {
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[0], 0),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[1], 1),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[2], 2),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[3], 3)
+                    new ModuleIOSim(generalConfig, 0),
+                    new ModuleIOSim(generalConfig, 1),
+                    new ModuleIOSim(generalConfig, 2),
+                    new ModuleIOSim(generalConfig, 3)
                 };
 
                 for (int i = 0; i < 4; i++) {
@@ -165,10 +166,10 @@ public class SwerveDrive extends SubsystemBase {
                 };
 
                 moduleIO = new ModuleIO[] {
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[0], 0),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[1], 1),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[2], 2),
-                    new ModuleIOTalonFX(generalConfig, moduleConfigs[3], 3)
+                    new ModuleIOSim(generalConfig, 0),
+                    new ModuleIOSim(generalConfig, 1),
+                    new ModuleIOSim(generalConfig, 2),
+                    new ModuleIOSim(generalConfig, 3)
                 };
 
                 for (int i = 0; i < 4; i++) {

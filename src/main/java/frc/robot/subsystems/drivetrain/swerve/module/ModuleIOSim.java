@@ -61,11 +61,11 @@ public class ModuleIOSim implements ModuleIO {
         this.moduleID = moduleID;
         this.config = config;
 
-        kDRIVE_JKG_METERS_SQUARED = 0;
-        kSTEER_JKG_METERS_SQUARED = 0;
+        kDRIVE_JKG_METERS_SQUARED = config.getDriveKGMetersSquared();
+        kSTEER_JKG_METERS_SQUARED = config.getSteerKGMetersSquared();
 
-        kDRIVE_MODULE_ROTATIONS_TO_MOTOR_ROTATIONS = 1 / config.getDriveMotorToOutputShaftRatio();
-        kSTEER_MODULE_ROTATIONS_TO_MOTOR_ROTATIONS = 1 / config.getSteerMotorToOutputShaftRatio();
+        kDRIVE_MODULE_ROTATIONS_TO_MOTOR_ROTATIONS = config.getDriveMotorToOutputShaftRatio();
+        kSTEER_MODULE_ROTATIONS_TO_MOTOR_ROTATIONS = config.getSteerMotorToOutputShaftRatio();
 
         driveSim = new FlywheelSim(
             LinearSystemId.createFlywheelSystem(
@@ -142,7 +142,7 @@ public class ModuleIOSim implements ModuleIO {
         inputs.driveCurrentDrawAmps = driveSim.getCurrentDrawAmps();
         inputs.steerCurrentDrawAmps = steerSim.getCurrentDrawAmps();
 
-        inputs.driveVelocityMetersPerSec = driveSim.getAngularVelocityRPM() * Math.PI * 2 * config.getDriveWheelRadiusMeters();
+        inputs.driveVelocityMetersPerSec = driveSim.getAngularVelocityRPM() * config.getDriveWheelRadiusMeters();
 
         inputs.steerVelocityRadiansPerSec = steerSim.getAngularVelocityRadPerSec();
 
