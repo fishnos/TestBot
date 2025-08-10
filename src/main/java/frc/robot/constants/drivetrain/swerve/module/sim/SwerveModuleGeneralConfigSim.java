@@ -59,12 +59,12 @@ public class SwerveModuleGeneralConfigSim implements SwerveModuleGeneralConfigBa
 
     @Override
     public double getDriveKV() {
-        return 0;
+        return 2.6;
     }
 
     @Override
     public double getDriveKA() {
-        return 0;
+        return 0.3;
     }
 
     @Override
@@ -154,7 +154,7 @@ public class SwerveModuleGeneralConfigSim implements SwerveModuleGeneralConfigBa
 
     @Override
     public double getSteerKV() {
-        return 0;
+        return 5.0;
     }
 
     @Override
@@ -174,7 +174,7 @@ public class SwerveModuleGeneralConfigSim implements SwerveModuleGeneralConfigBa
 
     @Override
     public double getSteerKD() {
-        return 0.7;
+        return 0.0;
     }
 
     @Override
@@ -234,7 +234,7 @@ public class SwerveModuleGeneralConfigSim implements SwerveModuleGeneralConfigBa
 
     @Override
     public double getDriveKGMetersSquared() {
-        return 0.025;
+        return 0.003;
     }
 
     @Override

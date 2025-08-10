@@ -238,12 +238,14 @@ public class SwerveDrive extends SubsystemBase {
             modulePositions
         );
 
-        Logger.recordOutput("Swerve/RobotPose", swerveDrivePoseEstimator.getEstimatedPosition());
-        Logger.recordOutput("Swerve/RobotPosition", swerveDrivePoseEstimator.getEstimatedPosition().getTranslation());
-        Logger.recordOutput("Swerve/RobotRotation", swerveDrivePoseEstimator.getEstimatedPosition().getRotation());
+        Logger.recordOutput("Swerve/robotPose", swerveDrivePoseEstimator.getEstimatedPosition());
+        Logger.recordOutput("Swerve/robotPosition", swerveDrivePoseEstimator.getEstimatedPosition().getTranslation());
+        Logger.recordOutput("Swerve/robotRotation", swerveDrivePoseEstimator.getEstimatedPosition().getRotation());
     }
 
     public void driveRobotRelative(ChassisSpeeds speeds, double dt) {
+        Logger.recordOutput("Swerve/desiredRobotRelativeSpeeds", speeds);
+
         SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(states, generalConfig.getDriveMaxVelocityMetersPerSec());
 
