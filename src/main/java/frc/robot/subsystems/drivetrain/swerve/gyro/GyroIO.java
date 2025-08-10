@@ -1,10 +1,13 @@
 package frc.robot.subsystems.drivetrain.swerve.gyro;
 
+import org.littletonrobotics.junction.AutoLog;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public interface GyroIO {
-    public class GyroIOInputs {
+    @AutoLog
+    class GyroIOInputs {
         public double gyroTemperature = 0;
         public boolean isConnected = false;
 

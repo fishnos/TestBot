@@ -26,7 +26,7 @@ public class Elevator extends SubsystemBase {
 
     private double setpoint = 0;
 
-    public Elevator() {
+    private Elevator() {
         switch (Constants.currentMode) {
             case COMP:
                 config = ElevatorConfigComp.getInstance();

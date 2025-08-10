@@ -37,8 +37,11 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.drivetrain.swerve.module.SwerveModuleGeneralConfigBase;
 import frc.robot.constants.drivetrain.swerve.module.SwerveModuleSpecificConfigBase;
 import frc.robot.lib.util.PhoenixUtil;
+import frc.robot.subsystems.drivetrain.swerve.Phoenix6Odometry;
 
 public class ModuleIOTalonFX implements ModuleIO {
+    private final Phoenix6Odometry odom;
+
     private final SwerveModuleGeneralConfigBase generalConfig;
     private final SwerveModuleSpecificConfigBase specificConfig;
 
@@ -87,6 +90,8 @@ public class ModuleIOTalonFX implements ModuleIO {
     private Rotation2d lastSteerSetpoint = new Rotation2d();
 
     public ModuleIOTalonFX(SwerveModuleGeneralConfigBase generalConfig, SwerveModuleSpecificConfigBase specificConfig, int moduleID) {
+        this.odom = Phoenix6Odometry.getInstance();
+
         this.moduleID = moduleID;
 
         this.generalConfig = generalConfig;
@@ -214,6 +219,14 @@ public class ModuleIOTalonFX implements ModuleIO {
         steerEncoderPosition = steerEncoder.getPosition().clone();
         steerEncoderAbsolutePosition = steerEncoder.getAbsolutePosition().clone();
         steerEncoderVelocity = steerEncoder.getVelocity().clone();
+
+        odom.registerSignal(driveMotor, drivePosition);
+        odom.registerSignal(driveMotor, driveVelocity);
+        odom.registerSignal(steerMotor, steerMotorPosition);
+        odom.registerSignal(steerMotor, steerMotorVelocity);
+        odom.registerSignal(steerEncoder, steerEncoderPosition);
+        odom.registerSignal(steerEncoder, steerEncoderAbsolutePosition);
+        odom.registerSignal(steerEncoder, steerEncoderVelocity);
 
         BaseStatusSignal.setUpdateFrequencyForAll(
             100, 
